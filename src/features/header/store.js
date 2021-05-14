@@ -1,6 +1,16 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { fetchCount } from '../counter/counterAPI';
 
-const initialState = { header: '' };
+const initialState = { header: '', status: '' };
+
+// Action async
+export const changeHeaderAsync = createAsyncThunk(
+  'header/changeHeaderAsync',
+  async (newHeader) => {
+    const response = await fetchCount(newHeader);
+    return response.data;
+  }
+);
 
 export const header = createSlice({
   name: 'header',
@@ -9,6 +19,16 @@ export const header = createSlice({
     changeHeader: (state, action) => {
       state.header = action.payload;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(changeHeaderAsync.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(changeHeaderAsync.fulfilled, (state, action) => {
+        state.status = 'done';
+        state.header = action.payload;
+      });
   },
 });
 
